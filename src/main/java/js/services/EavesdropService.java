@@ -65,7 +65,6 @@ public class EavesdropService{
     
     public static ArrayList<String> parseMeetings(String source, String year) throws ServletException, IOException
     {
-    	System.out.println("***TEST YEARS**");
     	ArrayList<String> allMeetings = new ArrayList<String>();
     	
     	try {
@@ -82,7 +81,6 @@ public class EavesdropService{
 			    while(iter.hasNext()) {
 		    			Element e = (Element) iter.next();
 		    			String s = e.html();
-		    			System.out.println(s);
 		    			
 		    			if ( s != null && start == true) {
 		    				allMeetings.add(s);
@@ -106,13 +104,20 @@ public class EavesdropService{
 		System.out.println("**meetingsPerYear** year = " + year);
 		ArrayList<String> allMeetings = EavesdropService.parseMeetings(source, year);
 		String dateSegment = allMeetings.get(0).substring(19, 35);
-		System.out.println("dateSegment0 = " + dateSegment);
 		
-//		for(String s : allMeetings){
-//			
-//		}
+		int count = 0;
+		if(!allMeetings.isEmpty()){
+			count = 1;
+		}
 		
-		return 0;
+		for(String s : allMeetings){
+			if(!s.contains(dateSegment)){
+				count ++;
+				dateSegment = s.substring(19,35);
+			}
+		}
+		
+		return count;
 	}
     
 	

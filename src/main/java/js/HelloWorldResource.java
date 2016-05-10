@@ -2,6 +2,7 @@ package js;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,9 +42,9 @@ public class HelloWorldResource {
 	
 	@GET
 	@Path("/")
-	@Produces("text/html")
+	@Produces("application/xml")
 	public StreamingOutput numMeetings() throws ServletException, IOException{
-		Map<String,Integer> table = new TreeMap<String, Integer>();
+		final Map<String,Integer> table = new TreeMap<String, Integer>();
 		String source = "http://eavesdrop.openstack.org/meetings/solum_team_meeting/";
 		
 		//for loop through amt of years
@@ -51,37 +52,49 @@ public class HelloWorldResource {
 		int numMeetings;
 		for(String y: allYears){
 			numMeetings = EavesdropService.meetingsPerYear(source, y);
-			table.put(y, numMeetings);
+			table.put(y.substring(0, y.length()-1), numMeetings);
 		}
-		
+		System.out.println(table);
 		
 		//getNumMeetings(allMeetings);
 		//call service to get all meetings per year
-		final Years years = new Years();
-		years.setYearList(allYears);
+//		final Years years = new Years();
+//		years.setYearList(allYears);
 		
 		//return counts in json format	    
 	    return new StreamingOutput() {
 	         public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-	        		 outputYears(outputStream, years);
+	        		 outputTable(outputStream, table);
+	        		 System.out.println("it returned");
 	         }
 	      };		
-		
-    //TODO: allMeetings was previously allYears. wut the fuck are you doing now morgan
+
 	}
 	
-	protected void outputYears(OutputStream os, Years years) throws IOException {
-		try { 
-			JAXBContext jaxbContext = JAXBContext.newInstance(Years.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-	 
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			jaxbMarshaller.marshal(years, os);
-		} catch (JAXBException jaxb) {
-			jaxb.printStackTrace();
-			throw new WebApplicationException();
-		}
-	}
+//	protected void outputYears(OutputStream os, Years years) throws IOException {
+//		try { 
+//			JAXBContext jaxbContext = JAXBContext.newInstance(Years.class);
+//			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+//	 
+//			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+//			jaxbMarshaller.marshal(years, os);
+//		} catch (JAXBException jaxb) {
+//			jaxb.printStackTrace();
+//			throw new WebApplicationException();
+//		}
+//	}
+	
+	  protected void outputTable(OutputStream os, Map<String, Integer> table) throws IOException { //TODO: implement getId() and getProj() and uncomment
+	      PrintStream writer = new PrintStream(os);
+	      writer.println("<table>");
+	      for(Map.Entry<String, Integer> entry : table.entrySet()){
+	    	  writer.println("<count>");
+	      	  writer.println("   <year>" + entry.getKey() + "</year>");
+	      	  writer.println("   <numMeetings>" + entry.getValue() + "</numMeetings>");
+	      	  writer.println("</count>");
+	      }
+	      writer.println("</table>");
+	   }
 	
 	
 	
